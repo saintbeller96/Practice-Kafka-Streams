@@ -7,35 +7,51 @@ plugins {
 	kotlin("plugin.spring") version "1.6.21"
 }
 
-group = "com.saintbeller96"
-version = "0.0.1-SNAPSHOT"
-java.sourceCompatibility = JavaVersion.VERSION_17
 
-repositories {
-	mavenCentral()
-}
+allprojects {
+	apply(plugin = "org.jetbrains.kotlin.jvm")
+	apply(plugin = "org.springframework.boot")
+	apply(plugin = "io.spring.dependency-management")
 
-dependencies {
-	implementation("org.springframework.boot:spring-boot-starter-webflux")
-	implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
-	implementation("io.projectreactor.kotlin:reactor-kotlin-extensions")
-	implementation("org.apache.kafka:kafka-streams")
-	implementation("org.jetbrains.kotlin:kotlin-reflect")
-	implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
-	implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
-	implementation("org.springframework.kafka:spring-kafka")
-	testImplementation("org.springframework.boot:spring-boot-starter-test")
-	testImplementation("io.projectreactor:reactor-test")
-	testImplementation("org.springframework.kafka:spring-kafka-test")
-}
+	group = "com.saintbeller96"
+	version = "0.0.1-SNAPSHOT"
 
-tasks.withType<KotlinCompile> {
-	kotlinOptions {
-		freeCompilerArgs = listOf("-Xjsr305=strict")
-		jvmTarget = "17"
+	repositories {
+		mavenCentral()
+	}
+
+	dependencies {
+		implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
+		implementation("org.apache.kafka:kafka-streams")
+		implementation("org.jetbrains.kotlin:kotlin-reflect")
+		implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
+		implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
+		implementation("org.springframework.kafka:spring-kafka")
+	}
+
+	tasks.withType<KotlinCompile> {
+		kotlinOptions {
+			freeCompilerArgs = listOf("-Xjsr305=strict")
+			jvmTarget = "17"
+		}
+	}
+
+	tasks.withType<Test> {
+		useJUnitPlatform()
 	}
 }
 
-tasks.withType<Test> {
-	useJUnitPlatform()
+
+val springApplications = emptyList<Any?>()
+
+configure(springApplications) {
+
+	dependencies {
+		implementation("org.springframework.boot:spring-boot-starter-webflux")
+		implementation("io.projectreactor.kotlin:reactor-kotlin-extensions")
+		implementation("org.springframework.kafka:spring-kafka")
+		testImplementation("org.springframework.boot:spring-boot-starter-test")
+		testImplementation("io.projectreactor:reactor-test")
+		testImplementation("org.springframework.kafka:spring-kafka-test")
+	}
 }
