@@ -10,8 +10,6 @@ plugins {
 
 allprojects {
 	apply(plugin = "org.jetbrains.kotlin.jvm")
-	apply(plugin = "org.springframework.boot")
-	apply(plugin = "io.spring.dependency-management")
 
 	group = "com.saintbeller96"
 	version = "0.0.1-SNAPSHOT"
@@ -21,12 +19,11 @@ allprojects {
 	}
 
 	dependencies {
-		implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
-		implementation("org.apache.kafka:kafka-streams")
+		implementation("org.apache.kafka:kafka-streams:3.2.3")
+		implementation("org.slf4j:slf4j-api:2.0.1")
+		implementation("org.slf4j:slf4j-simple:2.0.1")
 		implementation("org.jetbrains.kotlin:kotlin-reflect")
 		implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
-		implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
-		implementation("org.springframework.kafka:spring-kafka")
 	}
 
 	tasks.withType<KotlinCompile> {
@@ -45,11 +42,15 @@ allprojects {
 val springApplications = emptyList<Any?>()
 
 configure(springApplications) {
+	apply(plugin = "org.springframework.boot")
+	apply(plugin = "io.spring.dependency-management")
 
 	dependencies {
+		implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
 		implementation("org.springframework.boot:spring-boot-starter-webflux")
 		implementation("io.projectreactor.kotlin:reactor-kotlin-extensions")
 		implementation("org.springframework.kafka:spring-kafka")
+		implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
 		testImplementation("org.springframework.boot:spring-boot-starter-test")
 		testImplementation("io.projectreactor:reactor-test")
 		testImplementation("org.springframework.kafka:spring-kafka-test")
