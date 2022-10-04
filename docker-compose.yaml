@@ -1,0 +1,47 @@
+version: '3.7'
+services:
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.0.1
+    hostname: zookeeper
+    environment:
+      ZOOKEEPER_SERVER_ID: 1
+      ZOOKEEPER_CLIENT_PORT: "2181"
+      ZOOKEEPER_TICK_TIME: "2000"
+    ports:
+      - 2181:2181
+  kafka:
+    image: confluentinc/cp-kafka:7.0.1
+    container_name: broker
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_ZOOKEEPER_CONNECT: "zookeeper:2181"
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_INTERNAL:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092,PLAINTEXT_INTERNAL://broker:29092
+      KAFKA_BROKER_ID: 1
+      KAFKA_BROKER_RACK: "r1"
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_DELETE_TOPIC_ENABLE: "true"
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+    ports:
+      - 9092:9092
+#  kafka-rest-proxy:
+#    image: confluentinc/cp-kafka-rest:7.0.1
+#    hostname: kafka-rest-proxy
+#    environment:
+#      KAFKA_REST_LISTENERS: http://0.0.0.0:8082/
+#      KAFKA_REST_SCHEMA_REGISTRY_URL: http://schema-registry:8081/
+#      KAFKA_REST_HOST_NAME: kafka-rest-proxy
+#      KAFKA_REST_ZOOKEEPER_CONNECT: zookeeper:2181
+#    ports:
+#      - 8082:8082
+#  kafka-topics-ui:
+#    image: landoop/kafka-topics-ui:0.9.4
+#    hostname: kafka-topics-ui
+#    depends_on:
+#      - kafka-rest-proxy
+#    environment:
+#      KAFKA_REST_PROXY_URL: "http://kafka-rest-proxy:8082/"
+#      PROXY: "true"
+#    ports:
+#      - 8098:8000

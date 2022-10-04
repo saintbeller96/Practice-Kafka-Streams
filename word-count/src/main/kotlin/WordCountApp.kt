@@ -4,6 +4,7 @@ import org.apache.kafka.streams.StreamsBuilder
 import org.apache.kafka.streams.StreamsConfig
 import org.apache.kafka.streams.kstream.KStream
 import org.apache.kafka.streams.kstream.Materialized
+import org.apache.kafka.streams.kstream.Named
 import org.apache.kafka.streams.kstream.Produced
 
 class WordCountApp {
@@ -19,14 +20,16 @@ fun main() {
 
     val builder = StreamsBuilder()
 
-    val wordCountInput: KStream<String, String> = builder.stream("word-count-topic")
+    val wordCountInput: KStream<String, String> = builder.stream("word-count-input")
 
     wordCountInput.mapValues(String::lowercase)
         .flatMapValues { text -> text.split(" ") }
         .selectKey { _, word -> word }
         .groupByKey()
+        //
         .count(Materialized.`as`("counts"))
-        .toStream().to("counts", Produced.with(Serdes.String(), Serdes.Long()))
+        .toStream()
+        .to("word-count-output", Produced.with(Serdes.String(), Serdes.Long()))
 
     val streams = KafkaStreams(builder.build(), config)
     streams.start()
