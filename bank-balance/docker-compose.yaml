@@ -1,0 +1,76 @@
+version: '3.7'
+services:
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.1.1
+    hostname: zookeeper
+    container_name: zookeeper
+    platform: linux/amd64
+    environment:
+      ZOOKEEPER_SERVER_ID: 1
+      ZOOKEEPER_CLIENT_PORT: "2181"
+      ZOOKEEPER_TICK_TIME: "2000"
+    ports:
+      - 2181:2181
+  kafka:
+    image: confluentinc/cp-kafka:7.1.1
+    hostname: kafka
+    container_name: kafka
+    platform: linux/amd64
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_ZOOKEEPER_CONNECT: "zookeeper:2181"
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_BROKER_ID: 1
+      KAFKA_BROKER_RACK: "r1"
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_DELETE_TOPIC_ENABLE: "true"
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+    ports:
+      - 9092:9092
+
+  schema-registry:
+    image: confluentinc/cp-schema-registry:7.1.1
+    hostname: schema-registry
+    container_name: schema-registry
+    platform: linux/amd64
+    depends_on:
+      - kafka
+    environment:
+      SCHEMA_REGISTRY_KAFKASTORE_CONNECTION_URL: zookeeper:2181
+      SCHEMA_REGISTRY_HOST_NAME: schema-registry
+      SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: 'kakfa:29092'
+      ##SCHEMA_REGISTRY_LISTENERS: http://schema-registry:38081
+      SCHEMA_REGISTRY_DEBUG: "true"
+    ports:
+      - 38081:38081
+
+  kafka-rest-proxy:
+    image: confluentinc/cp-kafka-rest:7.1.1
+    hostname: kafka-rest-proxy
+    container_name: kafka-rest-proxy
+    platform: linux/amd64
+    depends_on:
+      - kafka
+      - schema-registry
+    environment:
+      KAFKA_REST_LISTENERS: http://0.0.0.0:8082/
+      KAFKA_REST_SCHEMA_REGISTRY_URL: http://schema-registry:38081/
+      KAFKA_REST_HOST_NAME: kafka-rest-proxy
+      KAFKA_REST_ZOOKEEPER_CONNECT: "zookeeper:2181"
+      KAFKA_REST_BOOTSTRAP_SERVERS: "kafka:29092"
+    ports:
+      - 8082:8082
+
+  kafka-topics-ui:
+    image: landoop/kafka-topics-ui:latest
+    platform: linux/amd64
+    hostname: kafka-topics-ui
+    depends_on:
+      - kafka-rest-proxy
+    environment:
+      KAFKA_REST_PROXY_URL: http://kafka-rest-proxy:8082/
+      PROXY: "true"
+    ports:
+      - 8098:8000
